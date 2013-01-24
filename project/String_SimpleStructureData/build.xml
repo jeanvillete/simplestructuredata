@@ -1,0 +1,20 @@
+<project name="String_SimpleStructureData" default="dist-ssd" basedir=".">
+	
+	<tstamp>
+		<format property="day" pattern="yyyyMMdd.HHmm"/>
+	</tstamp>
+	
+	<property name="ssd" value="${ant.project.name}"/>
+	<property name="ssd-home" value="../${ssd}"/>
+	<property name="ssd-home-project" value="${ssd-home}/bin"/>
+	<property name="ssd-home-dist" value="${ssd-home}/dist"/>
+	<property name="ssd-jar" value="${ssd-home-dist}/${ssd}.${day}.jar"/>
+	
+	<target name="dist-ssd">
+		<mkdir dir="${ssd-home-dist}"/>
+		
+		<zip destfile="${ssd-jar}">
+		    <zipfileset dir="${ssd-home-project}" />
+		</zip>
+	</target>
+</project>
