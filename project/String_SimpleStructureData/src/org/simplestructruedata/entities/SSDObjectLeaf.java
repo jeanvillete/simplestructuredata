@@ -20,6 +20,11 @@ public class SSDObjectLeaf extends SSDObject {
 		this.value = value;
 	}
 
+	@Override
+	public String toString() {
+		return this.value;
+	}
+	
 	// GETTERS AND SETTERS //
 	public String getValue() {
 		return value;
