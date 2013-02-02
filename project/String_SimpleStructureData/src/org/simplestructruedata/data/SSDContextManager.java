@@ -187,10 +187,18 @@ public class SSDContextManager {
 	
 	@Override
 	public String toString() {
-		return this.toString(this.getRootObject(), null, "");
+		return this.toString(false);
+	}
+	
+	public String toString(boolean format) {
+		return this.toString(this.getRootObject(), null, "", new Formatting(format));
 	}
 	
 	public void toFile(File targetFile) {
+		this.toFile(targetFile, false);
+	}
+	
+	public void toFile(File targetFile, boolean format) {
 		if (targetFile == null) {
 			throw new SSDException("The parameter targetFile can't be null");
 		}
@@ -202,7 +210,7 @@ public class SSDContextManager {
 			FileOutputStream fos = new FileOutputStream(targetFile);
 			OutputStreamWriter osw = new OutputStreamWriter(fos, SSDDefaultConstants.DEFAULT_ENCODING);
 			PrintWriter pw = new PrintWriter(osw);
-			pw.print(this.toString());
+			pw.print(this.toString(format));
 			pw.close();
 			osw.close();
 			fos.close();
@@ -211,7 +219,7 @@ public class SSDContextManager {
 		}
 	}
 	
-	private String toString(SSDObject object, String identifier, String currentTab) {
+	private String toString(SSDObject object, String identifier, String currentTab, Formatting formatting) {
 		StringBuffer returning = new StringBuffer();
 		if (identifier != null && !identifier.isEmpty()) {
 			returning.append(object.getIdentifier() + " = ");
@@ -221,40 +229,57 @@ public class SSDContextManager {
 			SSDObjectLeaf objectLeaf = (SSDObjectLeaf)object;
 			returning.append("\"");
 			returning.append(SSDUtils.formatEscapes(objectLeaf.getValue()));
-			returning.append("\"\n");
+			returning.append("\"" + formatting.getNewLine());
 		} else if (object instanceof SSDObjectNode) {
 			SSDObjectNode objectNode = (SSDObjectNode)object;
-			returning.append("{\n");
+			returning.append("{" + formatting.getNewLine());
 			List<SSDObject> attributes = new ArrayList<SSDObject>(objectNode.getAttributes());
 			int attributeSize = attributes.size();
 			if (attributeSize > 0) {
 				for (int i = 0; i < attributeSize; i++) {
-					String nextTab = currentTab+"\t";
+					String nextTab = currentTab + formatting.getTabulator();
 					returning.append(nextTab);
 					if (i > 0) {
 						returning.append(", ");
 					}
 					SSDObject attribute = attributes.get(i);
-					returning.append(this.toString(attribute, attribute.getIdentifier(), nextTab));
+					returning.append(this.toString(attribute, attribute.getIdentifier(), nextTab, formatting));
 				}
 			}
 			returning.append(currentTab);
-			returning.append("}\n");
+			returning.append("}" + formatting.getNewLine());
 		} else if (object instanceof SSDObjectArray) {
 			SSDObjectArray objectArray = (SSDObjectArray)object;
-			returning.append("[\n");
+			returning.append("[" + formatting.getNewLine());
 			List<SSDObject> elements = objectArray.getElements();
 			for (int i = 0; i < elements.size(); i++ ) {
-				String nextTab = currentTab+"\t";
+				String nextTab = currentTab + formatting.getTabulator();
 				returning.append(nextTab);
 				if (i > 0) {
 					returning.append(", ");
 				}
-				returning.append(this.toString(elements.get(i), null, nextTab ));
+				returning.append(this.toString(elements.get(i), null, nextTab, formatting));
 			}
 			returning.append(currentTab);
-			returning.append("]\n");
+			returning.append("]" + formatting.getNewLine());
 		} else throw new SSDException("Invalid type to this point");
 		return returning.toString();
+	}
+	
+	private class Formatting {
+		private char tabulator = '\t';
+		private char newLine = '\n';
+		Formatting(boolean setFormat) {
+			if (!setFormat) {
+				tabulator = ' ';
+				newLine = ' ';
+			}
+		}
+		char getTabulator() {
+			return tabulator;
+		}
+		char getNewLine() {
+			return newLine;
+		}
 	}
 }
